@@ -9,6 +9,16 @@ ee.Authenticate()
 ee.Initialize (project='eee-mateonoel2')
 brazil_shapefile = geemap.shp_to_ee('/Users/mateonoel/Desktop/UNCCD/content/Brazil.shp')
 
+col = ee.ImageCollection('MODIS/006/MCD12Q1').select('LC_Type1')
+fc = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(
+    'country_na == "Brazil"'
+)
+col_clip = col.map(lambda img: img.clipToCollection(fc))
+DOY = col_clip.filterDate('2002-01-01', '2021-01-01')
+distinctDOY = col.filterDate('2002-01-01', '2021-01-01')
+num_images = distinctDOY.size().getInfo()
+layer_names = ['MODIS ' + str(year) for year in range(2002, 2021)]
+
 class Map(geemap.Map):
 
     def __init__(self, **kwargs):
@@ -47,7 +57,15 @@ class Map(geemap.Map):
         brazil_lc = landcover.clip(brazil_shapefile)
         self.setCenter(-55, -10, 4)
         self.addLayer(brazil_lc, igbpLandCoverVis, 'MODIS Land Cover')
-        
+        self.add_basemap('HYBRID')
+        self.centerObject(brazil_shapefile)
+        self.ts_inspector(left_ts=DOY, left_names=layer_names, left_vis=igbpLandCoverVis, left_index=0,
+                        right_ts=DOY, right_names=layer_names, right_vis=igbpLandCoverVis, right_index=-1,
+                        width='130px', date_format='YYYY', add_close_button=False)
+        self.remove_legend
+        self.add_legend(title="MODIS Land Cover", builtin_legend='MODIS/006/MCD12Q1')
+        self.addLayerControl
+
 
 @solara.component
 def Page():
