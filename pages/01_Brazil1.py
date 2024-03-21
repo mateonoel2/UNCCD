@@ -52,4 +52,4 @@ class Map(geemap.Map):
 @solara.component
 def Page():
     with solara.Column(style={"min-width": "500px"}):
-        Map.element()
+        Map.element() 
